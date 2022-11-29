@@ -4,8 +4,6 @@ namespace ProgrammeringsOppgave
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
-
             string[,] chessField = new string[,] {  {"O", "O", "O", "O", "O", "O", "O", "O"},
                                                     {"O", "O", "O", "O", "O", "O", "O", "O"},
                                                     {"O", "O", "O", "O", "O", "O", "O", "O"},
