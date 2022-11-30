@@ -1,10 +1,14 @@
+using System.Collections;
+
 namespace ProgrammeringsOppgave
 {
     class QueensProblem
     {
         static void Main(string[] args)
         {
-            
+
+            //initializing the empty chess field
+
             string[,] chessField = new string[,] {  {"O", "O", "O", "O", "O", "O", "O", "O"},
                                                     {"O", "O", "O", "O", "O", "O", "O", "O"},
                                                     {"O", "O", "O", "O", "O", "O", "O", "O"},
@@ -14,36 +18,52 @@ namespace ProgrammeringsOppgave
                                                     {"O", "O", "O", "O", "O", "O", "O", "O"},
                                                     {"O", "O", "O", "O", "O", "O", "O", "O"} };
 
+            //randomly determine the first queen's position
             Random rndFirstQueen = new Random();
             int intFirstQueen = rndFirstQueen.Next(0,7);
-            chessField[0, 4] = "Q";
+            chessField[0, intFirstQueen] = "Q";
 
+            //columns cannot be used twice, therefore used columns will be blocked for checking
             System.Collections.ArrayList blockedColumns = new System.Collections.ArrayList();
-            blockedColumns.Add(4);
+            blockedColumns.Add(intFirstQueen);
 
-            getNextQueen(ref chessField, 1, 0);
+            //call recursive function to add next Queen for 2nd row
+            getNextQueen(ref chessField, 1, 0, ref blockedColumns);
 
+            //print the output to console
             printChessField(ref chessField);
         }
 
-        public static bool getNextQueen(ref string[,] chessField, int currentRow, int currentColumn) {
-
+        public static bool getNextQueen(ref string[,] chessField, int currentRow, int currentColumn, ref ArrayList blockedColumns) {
+            
             for (int row = currentRow; row <=7; row++) {
 
                 for (int column = currentColumn; column <=7; column++) {
 
-                    chessField[row, column] = "Q";
-                    if (checkQueenConflict(ref chessField)) {
-                        chessField[row, column] = "O";
-                        continue;
-                    } else {
-                        if (!getNextQueen(ref chessField, currentRow+1, 0)) {
+                    //to increase performance already used columns will not be tried out
+                    if (!blockedColumns.Contains(column)) {
+                        //if the columns are valid, the queen will be added
+                        chessField[row, column] = "Q";
+                        //check for conlicts and in case of conflict, revert last added queen
+                        if (checkQueenConflict(ref chessField)) {
                             chessField[row, column] = "O";
+                            continue;
+                        } else {
+                            //in case of no conflict, the new queen's column will be blocked for further queens
+                            blockedColumns.Add(column);
+                            if (!getNextQueen(ref chessField, currentRow+1, 0, ref blockedColumns)) {
+                                /*recursive fallback - if the following queen did not work out
+                                the current queen does not work either and will be reverted*/
+                                chessField[row, column] = "O";
+                                //blocked column can be used again
+                                blockedColumns.Remove(column);
+                            }
                         }
                     }
                 }
 
                 if (isRowEmpty(ref chessField, row)) {
+                    //if a row is empty, reversion is needed
                     return false;
                 }
             }
@@ -62,32 +82,6 @@ namespace ProgrammeringsOppgave
                 return false;
             }
 
-        }
-
-        public static bool getNextQueen(ref string[,] chessField, int currentRow, System.Collections.ArrayList blockedColumns) {
-            
-            for (int row = currentRow; row <=7; row++) {
-
-                for (int column = 0; column <=7; column++) {
-                    if (!blockedColumns.Contains(column)) {
-                        chessField[row, column] = "Q";
-                        if (checkQueenConflict(ref chessField)) {
-                            chessField[row, column] = "O";
-                            continue;
-                        } else {
-                            blockedColumns.Add(column);
-                            if (!getNextQueen(ref chessField, currentRow+1, blockedColumns)) {
-                                chessField[row, column] = "O";
-                                blockedColumns.Remove(column);
-                                if (column == 7) {
-                                    return false;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            return true;
         }
 
         public static bool checkQueenConflict(ref string[,] chessField) {
