@@ -1,151 +1,245 @@
+﻿using System;
 using System.Collections;
 
-namespace ProgrammeringsOppgave
+namespace NQueensProblem
 {
-    class QueensProblem
+
+    public class NQueensProblem
     {
-        static void Main(string[] args)
+
+        private int _SizeOfField;
+        private bool[,] _ChessField;
+        private List<int> _ColumnsThatHaveQueensAlready;
+        private List<bool[,]> _NQueenProblemSolutions;
+
+        public int GetSizeOfField()
         {
-
-            //initializing the empty chess field
-
-            string[,] chessField = new string[,] {  {"O", "O", "O", "O", "O", "O", "O", "O"},
-                                                    {"O", "O", "O", "O", "O", "O", "O", "O"},
-                                                    {"O", "O", "O", "O", "O", "O", "O", "O"},
-                                                    {"O", "O", "O", "O", "O", "O", "O", "O"},
-                                                    {"O", "O", "O", "O", "O", "O", "O", "O"},
-                                                    {"O", "O", "O", "O", "O", "O", "O", "O"},
-                                                    {"O", "O", "O", "O", "O", "O", "O", "O"},
-                                                    {"O", "O", "O", "O", "O", "O", "O", "O"} };
-
-            //randomly determine the first queen's position
-            Random rndFirstQueen = new Random();
-            int intFirstQueen = rndFirstQueen.Next(0,7);
-            chessField[0, intFirstQueen] = "Q";
-
-            //columns cannot be used twice, therefore used columns will be blocked for checking
-            System.Collections.ArrayList blockedColumns = new System.Collections.ArrayList();
-            blockedColumns.Add(intFirstQueen);
-
-            //call recursive function to add next Queen for 2nd row
-            getNextQueen(ref chessField, 1, 0, ref blockedColumns);
-
-            //print the output to console
-            printChessField(ref chessField);
+            return _SizeOfField;
         }
 
-        public static bool getNextQueen(ref string[,] chessField, int currentRow, int currentColumn, ref ArrayList blockedColumns) {
-            
-            for (int row = currentRow; row <=7; row++) {
+        public void SetSizeOfField(int SizeOfField)
+        {
+            _SizeOfField = SizeOfField;
+        }
 
-                for (int column = currentColumn; column <=7; column++) {
+        public bool[,] GetChessField()
+        {
+            return _ChessField;
+        }
 
-                    //to increase performance already used columns will not be tried out
-                    if (!blockedColumns.Contains(column)) {
-                        //if the columns are valid, the queen will be added
-                        chessField[row, column] = "Q";
-                        //check for conlicts and in case of conflict, revert last added queen
-                        if (checkQueenConflict(ref chessField)) {
-                            chessField[row, column] = "O";
-                            continue;
-                        } else {
-                            //in case of no conflict, the new queen's column will be blocked for further queens
-                            blockedColumns.Add(column);
-                            if (!getNextQueen(ref chessField, currentRow+1, 0, ref blockedColumns)) {
-                                /*recursive fallback - if the following queen did not work out
-                                the current queen does not work either and will be reverted*/
-                                chessField[row, column] = "O";
-                                //blocked column can be used again
-                                blockedColumns.Remove(column);
+        public void SetChessField(bool[,] ChessField)
+        {
+            _ChessField = ChessField;
+        }
+
+        public List<int> GetColumnsThatHaveQueensAlready()
+        {
+            return _ColumnsThatHaveQueensAlready;
+        }
+
+        public void SetColumnsThatHaveQueensAlready(List<int> ColumnsThatHaveQueensAlready)
+        {
+            _ColumnsThatHaveQueensAlready = ColumnsThatHaveQueensAlready;
+        }
+
+        public List<bool[,]> GetNQueenProblemSolutions()
+        {
+            return _NQueenProblemSolutions;
+        }
+
+        public void SetNQueenProblemSolutions(List<bool[,]> NQueenProblemSolutions)
+        {
+            _NQueenProblemSolutions = NQueenProblemSolutions;
+        }
+
+        public void AddNQueenProblemSolution(bool[,] NQueenProblemSolutionToBeAdded)
+        {
+            GetNQueenProblemSolutions().Add(NQueenProblemSolutionToBeAdded);
+        }
+
+        public NQueensProblem()
+        {
+            _SizeOfField = 8;
+            bool[,] DefaultChessField = new bool[GetSizeOfField(), GetSizeOfField()];
+            _ChessField = DefaultChessField;
+            _ColumnsThatHaveQueensAlready = new List<int>();
+            _NQueenProblemSolutions = new List<bool[,]>();
+        }
+
+        public NQueensProblem(int NumberOfQueens)
+        {
+            _SizeOfField = NumberOfQueens;
+            bool[,] DefaultChessField = new bool[GetSizeOfField(), GetSizeOfField()];
+            _ChessField = DefaultChessField;
+            _ColumnsThatHaveQueensAlready = new List<int>();
+            _NQueenProblemSolutions = new List<bool[,]>();
+            InitializeChessFieldForNumberOfQueens(NumberOfQueens);
+        }
+
+        public void InitializeChessFieldForNumberOfQueens(int NumberOfQueens)
+        {
+            PutQueenOnRandomPositionInFirstRow(MaximumPosition:NumberOfQueens);
+            CanNextQueenBePlaced(CurrentRow: 1);
+        }
+
+        public void PutQueenOnRandomPositionInFirstRow(int MaximumPosition)
+        {
+            Random RandomizerForFirstQueenPosition = new Random();
+            int FirstQueenColumnIndex = RandomizerForFirstQueenPosition.Next(0, MaximumPosition);
+            PutQueenOnChessField(0, FirstQueenColumnIndex);
+        }
+
+        public void PutQueenOnChessField(int RowIndexOfQueenToBeAdded, int ColumnIndexOfQueenToBeAdded)
+        {
+            GetChessField()[RowIndexOfQueenToBeAdded, ColumnIndexOfQueenToBeAdded] = true;
+            AddQueenColumnToColumnsThatHaveQueensAlready(QueenColumnToAdd: ColumnIndexOfQueenToBeAdded);
+        }
+
+        public void RemoveQueenFromChessField(int RowIndexOfQueenToBeRemoved, int ColumnIndexOfQueenToBeRemoved)
+        {
+            GetChessField()[RowIndexOfQueenToBeRemoved, ColumnIndexOfQueenToBeRemoved] = false;
+            RemoveQueenColumnFromColumnsThatHaveQueensAlready(QueenColumnToRemove: ColumnIndexOfQueenToBeRemoved);
+        }
+
+        public void AddQueenColumnToColumnsThatHaveQueensAlready(int QueenColumnToAdd)
+        {
+            GetColumnsThatHaveQueensAlready().Add(QueenColumnToAdd);
+        }
+
+        public void RemoveQueenColumnFromColumnsThatHaveQueensAlready(int QueenColumnToRemove)
+        {
+            GetColumnsThatHaveQueensAlready().Remove(QueenColumnToRemove);
+        }
+
+        public bool CanNextQueenBePlaced(int CurrentRow)
+        {
+            for (int RowIndex = CurrentRow; RowIndex < GetSizeOfField(); RowIndex++)
+            {
+                for (int ColumnIndex = 0; ColumnIndex < GetSizeOfField(); ColumnIndex++)
+                {
+                    if (!GetColumnsThatHaveQueensAlready().Contains(ColumnIndex))
+                    {
+                        PutQueenOnChessField(RowIndexOfQueenToBeAdded: RowIndex, ColumnIndexOfQueenToBeAdded: ColumnIndex);
+ 
+                        if (DoesChessFieldHaveQueenConflict())
+                        {
+                            RemoveQueenFromChessField(RowIndexOfQueenToBeRemoved: RowIndex, ColumnIndexOfQueenToBeRemoved: ColumnIndex);
+                        }
+                        else
+                        {
+                            if (!CanNextQueenBePlaced(CurrentRow + 1))
+                            {
+                                RemoveQueenFromChessField(RowIndexOfQueenToBeRemoved: RowIndex, ColumnIndexOfQueenToBeRemoved: ColumnIndex);
                             }
                         }
                     }
                 }
-
-                if (isRowEmpty(ref chessField, row)) {
-                    //if a row is empty, reversion is needed
+                if (IsRowOfChessFieldEmpty(RowIndexToBeChecked: RowIndex))
+                {
+                    return false;
+                } else if (RowIndex == GetSizeOfField() -1)
+                {
+                    bool[,] ChessFieldCopy = new bool[GetSizeOfField(), GetSizeOfField()];
+                    Array.Copy(GetChessField(), ChessFieldCopy, GetSizeOfField()*GetSizeOfField());
+                    AddNQueenProblemSolution(ChessFieldCopy);
                     return false;
                 }
             }
             return true;
         }
 
-        public static bool isRowEmpty(ref string[,] chessField, int row) {
+        public bool IsRowOfChessFieldEmpty(int RowIndexToBeChecked)
+        {
+            bool RowOfChessFieldIsEmpty = true;
+            for (int ColumnIndexToBeChecked = 0; RowOfChessFieldIsEmpty == true && ColumnIndexToBeChecked < GetSizeOfField(); ColumnIndexToBeChecked++)
+            {
+                if (GetChessField()[RowIndexToBeChecked, ColumnIndexToBeChecked] == true)
+                {
+                    RowOfChessFieldIsEmpty = false;
+                }
+            }
+            return RowOfChessFieldIsEmpty;
+        }
 
-            if (chessField[row,0]=="O" && chessField[row,1]=="O"
-                && chessField[row,2]=="O" && chessField[row,3]=="O"
-                && chessField[row,4]=="O" && chessField[row,5]=="O"
-                && chessField[row,6]=="O" && chessField[row,7]=="O") {
+        public bool DoesChessFieldHaveQueenConflict()
+        {
+            bool ChessFieldHasQueenConflict = false;
+            for (int RowIndex = 0; ChessFieldHasQueenConflict == false && RowIndex < GetSizeOfField(); RowIndex++)
+            {
+                for (int ColumnIndex = 0; ChessFieldHasQueenConflict == false && ColumnIndex < GetSizeOfField(); ColumnIndex++)
+                {
+                    if (DoesChessFieldSquareContainQueen(RowIndexToBeChecked: RowIndex, ColumnIndexToBeChecked: ColumnIndex))
+                    {
+                        int QueenConflictColumn = ColumnIndex;
+                        for (int CheckConflictCounter = 1; ChessFieldHasQueenConflict == false && RowIndex + CheckConflictCounter < GetSizeOfField(); CheckConflictCounter++)
+                        {
+                            if (QueenConflictColumn - CheckConflictCounter >= 0 &&
+                            DoesChessFieldSquareContainQueen(RowIndex + CheckConflictCounter, QueenConflictColumn - CheckConflictCounter))
+                            {
+                                ChessFieldHasQueenConflict = true;
+                            } else if (DoesChessFieldSquareContainQueen(RowIndex + CheckConflictCounter, QueenConflictColumn))
+                            {
+                                ChessFieldHasQueenConflict = true;
+                            } else if (QueenConflictColumn + CheckConflictCounter < GetSizeOfField() &&
+                            DoesChessFieldSquareContainQueen(RowIndex + CheckConflictCounter, QueenConflictColumn + CheckConflictCounter))
+                            {
+                                ChessFieldHasQueenConflict = true;
+                            }
+                        }
+                    }
+                }
+            }
+            return ChessFieldHasQueenConflict;
+        }
+
+        public bool DoesChessFieldSquareContainQueen(int RowIndexToBeChecked, int ColumnIndexToBeChecked)
+        {
+            if (GetChessField()[RowIndexToBeChecked, ColumnIndexToBeChecked] == true)
+            {
                 return true;
             }
-            else {
+            else
+            {
                 return false;
             }
-
         }
-
-        public static bool checkQueenConflict(ref string[,] chessField) {
-
-            bool queenConflict = false;
-
-            for (int row = 0; row <=7; row++) {
-
-                for (int column = 0; column <=7; column++) {
-
-                    if (chessField[row, column] == "Q") {
-                        int queenConflictColumn = column;
-                        for (int checkConflictCounter = 1; row + checkConflictCounter <=7; checkConflictCounter++) {
-                            
-                            //check diagonal conflict left-down
-                            if (queenConflictColumn-checkConflictCounter >= 0 &&
-                            chessField[row + checkConflictCounter, queenConflictColumn-checkConflictCounter]=="Q") {
-                                queenConflict = true;
-                                break;
-                            }
-
-                            //check column conflict
-                            if (chessField[row + checkConflictCounter, queenConflictColumn]=="Q") {
-                                queenConflict = true;
-                                break;
-                            }
-
-                            //check diagonal conflict right-down
-                            if (queenConflictColumn+checkConflictCounter <= 7 &&
-                            chessField[row + checkConflictCounter, queenConflictColumn+checkConflictCounter]=="Q") {
-                                queenConflict = true;
-                                break;
-                            }
-
-                        }
-
-                    }
-
-                }
-
-            }
-
-            return queenConflict;
-
-        }
-
-        public static void printChessField(ref string[,] chessField) {
-
-            for (int row = 0; row <=7; row++) {
-
-                string outputline = "";
-
-                for (int column = 0; column <=7; column++) {
-                    
-                    outputline += chessField[row, column].ToString();
-
-                }
-
-                System.Console.WriteLine(outputline);
-
-            }
-
-        }
-
     }
 
+    public class QueensProblem
+    {
+        static void Main(string[] args)
+        {
+            int NumberOfQueens = 8;
+            NQueensProblem DefaultSizedChessField = new NQueensProblem(NumberOfQueens);
+
+            PrintChessFieldSolutions(DefaultSizedChessField);
+        }
+
+        public static void PrintChessFieldSolutions(NQueensProblem ChessFieldToBePrinted)
+        {
+            foreach (bool[,] CurrentNQueenProblemsSolution in ChessFieldToBePrinted.GetNQueenProblemSolutions())
+            {
+                for (int RowIndex = 0; RowIndex < ChessFieldToBePrinted.GetSizeOfField(); RowIndex++)
+                {
+                    string OutputLine = "";
+                    for (int ColumnIndex = 0; ColumnIndex < ChessFieldToBePrinted.GetSizeOfField(); ColumnIndex++)
+                    {
+
+                        if (CurrentNQueenProblemsSolution[RowIndex, ColumnIndex])
+                        {
+                            OutputLine += "X";
+                        }
+                        else
+                        {
+                            OutputLine += "O";
+                        }
+                    }
+                    System.Console.WriteLine(OutputLine);
+
+                }
+                System.Console.WriteLine();
+                System.Console.WriteLine();
+            }
+        }
+    }
 }
